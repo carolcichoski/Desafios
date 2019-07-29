@@ -1,0 +1,29 @@
+{
+    "collab_server" : "",
+    "contents" : "",
+    "created" : 1564433782475.000,
+    "dirty" : false,
+    "encoding" : "",
+    "folds" : "",
+    "hash" : "0",
+    "id" : "E88E29BC",
+    "lastKnownWriteTime" : -5925817778825846687,
+    "last_content_update" : 1564433782475,
+    "path" : null,
+    "project_path" : null,
+    "properties" : {
+        "cacheKey" : "C3EBF835",
+        "caption" : "base_perfilmun_sp",
+        "contentUrl" : "grid_resource/gridviewer.html?env=&obj=base_perfilmun_sp&cache_key=C3EBF835",
+        "displayedObservations" : 645,
+        "environment" : "",
+        "object" : "base_perfilmun_sp",
+        "preview" : 0,
+        "totalObservations" : 645,
+        "variables" : 6
+    },
+    "relative_order" : 4,
+    "source_on_save" : false,
+    "source_window" : "",
+    "type" : "r_dataframe"
+}

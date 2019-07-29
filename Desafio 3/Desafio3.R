@@ -20,6 +20,7 @@ install.packages("gdata")
 library(fread)
 install.packages("data.table")
 getwd()
+library(zoo)
 
 #Parte 1 - Combinando fonte da dados diferentes
 #1.1 carregando dados Base_MUNIC_2015.csv
@@ -30,6 +31,7 @@ Base_MUNIC_2015 <- read_delim("Base_MUNIC_2015.csv",
 View(Base_MUNIC_2015)
 view(base_perfilmun)
 view(base_perfilmun_sp)
+view(base_fiscalmunsp)
 
 #Renomeando colunas
 
@@ -41,7 +43,6 @@ base_perfilmun <- base_perfilmun %>%
 #selecionando UF DE SP
 base_perfilmun_sp <- base_perfilmun %>%
   filter(cod_uf == 35) %>%
- #não entendi
    select(cod_ibge6, municipio, A155, A156, A157, A158)  %>%
   rename(consorciosaude = A155, intermunicipal = A156, estado = A157, uniao = A158)
 
@@ -52,6 +53,7 @@ finbra <- read_delim("finbra.csv", ";", escape_double = FALSE,
                      locale = locale(encoding = "ISO-8859-1"), 
                      trim_ws = TRUE)
 View(finbra)
+names(base_fiscalmun)
 
 names(finbra)
 base_fiscalmun <- finbra %>%
@@ -59,17 +61,51 @@ base_fiscalmun <- finbra %>%
          populacao = 'População', coluna = 'Coluna', conta = 'Conta', valor = 'Valor')%>%
   mutate(cod_ibge6 = as.numeric(substr(cod_ibge7, 1, 6))) %>%
   select(-cod_ibge7)  %>%
-  separate("conta", into = c("item", "area"), sep = " - ")  %>%
-  filter(coluna == 'Despesas Empenhadas', item == '10' | item == '10.301' | item == '10.302' | item == '10.304')
+  #selecionando UF DE SP
+   base_fiscalmunsp <- base_fiscalmun %>%
+  filter(uf == "SP" ) %>%
+  
+  
+   #separate("conta", into = c("item", "area"), sep = " - ")  %>%
+ 
 
 base_fiscalmun <- base_fiscalmun %>%
   spread(key = area, value = valor) 
 
+base_fiscalmun <- base_fiscalmun %>%
+  do(na.locf(.))
 
 names(base_fiscalmun)  
 
 
+names(base_fiscalmun)  
+base_fiscalmun <- base_fiscalmun %>%
+
+
+head(base_fiscalmun)
+
+
 ### 1.1.3 Base de Saúde dos Municípios
+
+
+### checar o 3 dado
+
+
+
+## 1.2 Juntar bases de dados
+
+baseunica <- inner_join(base_perfilmun_sp, base_fiscalmunsp, by = "cod_ibge6")  %>%
+  inner_join(base_datasusmun, by = "cod_ibge6")
+
+baseunica <- baseunica %>%
+  mutate(menor1ano = gsub("-", "0", menor1ano)) %>%
+  select(-municipio.y) %>%
+  rename(municipio = municipio.x)
+
+# Parte 2 - Análise exploratória e gráfica dos dados
+
+library(readr)
+library(ggplot2)
 
 
 
