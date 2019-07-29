@@ -1,0 +1,76 @@
+### nome <- "Caroline Cichoski"
+### programa <- "Doutorado em Ciência Ambiental"
+### n_usp <- 6996718
+### data_entrega: "29/07/2019"
+
+# INSTRUÇÕES:
+#Para o desafio você precisará estar confortável com os seguintes tópicos: 
+#aberturas de bases de dados; 
+#manipulação de bases de dados com dplyr; 
+#bases de dados relacionais com dplyr; 
+#e, finalmente, visualização de dados com ggplot2 (caps 3, 7, 28). 
+
+# Parte 0 - Carregar bibliotecas
+library(tidyverse)
+library(dplyr)
+library(data.table)
+library(readxl)   # To read .xls files with read_excel function
+library(gdata)    # To read .xls files with read.xls function
+install.packages("gdata")
+library(fread)
+install.packages("data.table")
+getwd()
+
+#Parte 1 - Combinando fonte da dados diferentes
+#1.1 carregando dados Base_MUNIC_2015.csv
+library(readr)
+Base_MUNIC_2015 <- read_delim("Base_MUNIC_2015.csv", 
+                              ";", escape_double = FALSE, locale = locale(encoding = "ISO-8859-1"), 
+                              trim_ws = TRUE)
+View(Base_MUNIC_2015)
+view(base_perfilmun)
+view(base_perfilmun_sp)
+
+#Renomeando colunas
+
+base_perfilmun <- Base_MUNIC_2015 %>%
+  rename(cod_ibge7 = A1, cod_uf = Codigouf, municipio = Nome)
+base_perfilmun <- base_perfilmun %>%
+  mutate(cod_ibge6 = as.character(substr(cod_ibge7, 1, 6))) 
+
+#selecionando UF DE SP
+base_perfilmun_sp <- base_perfilmun %>%
+  filter(cod_uf == 35) %>%
+ #não entendi
+   select(cod_ibge6, municipio, A155, A156, A157, A158)  %>%
+  rename(consorciosaude = A155, intermunicipal = A156, estado = A157, uniao = A158)
+
+
+### 1.2 carregando Base Fiscal dos Municípios - FINBRA
+
+finbra <- read_delim("finbra.csv", ";", escape_double = FALSE, 
+                     locale = locale(encoding = "ISO-8859-1"), 
+                     trim_ws = TRUE)
+View(finbra)
+
+names(finbra)
+base_fiscalmun <- finbra %>%
+  rename(cod_ibge7 = 'Cod.IBGE', municipio = 'Instituição', uf = 'UF', 
+         populacao = 'População', coluna = 'Coluna', conta = 'Conta', valor = 'Valor')%>%
+  mutate(cod_ibge6 = as.numeric(substr(cod_ibge7, 1, 6))) %>%
+  select(-cod_ibge7)  %>%
+  separate("conta", into = c("item", "area"), sep = " - ")  %>%
+  filter(coluna == 'Despesas Empenhadas', item == '10' | item == '10.301' | item == '10.302' | item == '10.304')
+
+base_fiscalmun <- base_fiscalmun %>%
+  spread(key = area, value = valor) 
+
+
+names(base_fiscalmun)  
+
+
+### 1.1.3 Base de Saúde dos Municípios
+
+
+
+
