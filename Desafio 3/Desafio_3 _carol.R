@@ -61,11 +61,13 @@ view(base_perfilmun)
 
 #escolhendo as informações - 6. Articulação Interinstitucional - Saúde estado de RO
 base_perfilmun_ro <- base_perfilmun %>%
-  filter(cod_uf == 11) %>%
+  filter(cod_uf == 11) 
+
+  base_perfilmun_ro1 <- base_perfilmun_ro %>% 
   select(cod_ibge6, municipio, A155, A156, A157, A158)  %>%
   rename(consorciosaude = A155, intermunicipal = A156, estado = A157, uniao = A158)
 
-names(base_perfilmun_ro)
+names(base_perfilmun_ro1)
 
 
 ### 1.1.2 Base Fiscal dos Municípios
@@ -86,28 +88,31 @@ names(base_fiscalmun1)
 view(base_fiscalmun)
 view(base_fiscalmun1)
 view(base_fiscalmun2)
-remove(base_fiscalmun1)
+view(base_fiscalmun3)
+
 
 base_fiscalmun1 <- base_fiscalmun %>% 
   rename(cod_ibge7 = "Cod.IBGE", municipio = "Instituição", uf = 'UF', 
-         populacao =  "População", coluna = "Coluna" , conta = "Coluna", valor = "Valor") %>%
-  base_fiscalmun1 <- base_fiscalmun1 %>%
+         populacao =  "População", coluna = "Coluna" , conta = "Conta", valor = "Valor") %>%
   mutate(cod_ibge6 = as.numeric(substr(cod_ibge7, 1, 6))) %>% ###até aqui certo### as vezes da erro Call `rlang::last_error()` to see a backtrace
-  select(-cod_ibge7)  %>%
+  #select(-cod_ibge7)  %>%
   base_fiscalmun2 <- base_fiscalmun1 %>% 
   separate("conta", into = c("item", "area"), sep = " - ")  %>% #msg de warning
   filter(coluna == "Despesas Empenhadas", item == "10" | item == "10.301" | item == "10.302" | item == "10.304")
 
-base_fiscalmun2 <- base_fiscalmun1 %>%
+base_fiscalmun3 <- base_fiscalmun2 %>%
   spread(key = area, value = valor) 
 
 library(zoo)  ## Função do(na.locf) -> para espalhar valores de uma variável por linhas vazias ## Fonte: https://stackoverflow.com/questions/27207162/fill-in-na-based-on-the-last-non-na-value-for-each-group-in-r
 base_fiscalmun1 <- base_fiscalmun1 %>%
   do(na.locf(.))
 
-names(base_fiscalmun)  
-base_fiscalmun <- base_fiscalmun %>%
-  rename(saude = 'Saúde', assistencia = 'Assistência Hospitalar e Ambulatorial', atencao = 'Atenção Básica', vigilancia = 'Vigilância Sanitária') %>%
+names(base_fiscalmun3)  
+names(base_fiscalmun4)
+base_fiscalmun4 <- base_fiscalmun3 %>%
+  rename(saude = "Saúde", assistencia = "Assistência Hospitalar e Ambulatorial", atencao = "Atenção Básica", vigilancia = "Vigilância Sanitária") %>%
+  
+  base_fiscalmun5 <- base_fiscalmun4 %>%
   group_by(municipio, cod_ibge6) %>%   #para reduzir o número de observações (linhas) por município, preservando os valores máximos das variáveis
   summarise(contagem = n(), 
             populacao = max(populacao),
@@ -115,8 +120,8 @@ base_fiscalmun <- base_fiscalmun %>%
             assistencia = max(assistencia),
             atencao = max(atencao),
             vigilancia = max(vigilancia))
+names(base_fiscalmun5)
 
-head(base_fiscalmun)
 
 ### 1.1.3 Base de obitos
 library(readr)
@@ -134,23 +139,28 @@ base_datasus <- data_sus %>%
   rename(cod_ibge6 = Cod.IBGE) %>%
   select(cod_ibge6, obitos)  %>%
   arrange(cod_ibge6)  %>%
-  #filter(cod_ibge6 >= 350010 & cod_ibge6 <= 355710) 
+  
   
 head(base_datasus)
+names(base_datasus)
 
 ## 1.2 Juntar bases de dados
 
-view(base_perfilmun_ro)
-names(base_perfilmun_ro)
-view(base_fiscalmun)
+view(base_perfilmun_ro1)
+names(base_perfilmun_ro1)
+view(base_fiscalmun5)
 view(base_datasus)
 names(base_datasus)
 view(baseperfilsus)
 
-baseperfilsus <- inner_join(base_perfilmun_ro, base_datasus, by = "cod_ibge6")  %>% 
- inner_join(base_fiscalmun2, by = "cod_ibge6")  #não consigo fazer mutate no cod_ige7
+baseunica <- inner_join(base_perfilmun_ro1, base_datasus, by = "cod_ibge6")  
+baseunica1 <- baseunica %>% 
+ inner_join(base_fiscalmun5, by = "cod_ibge6") 
 
-
+names(baseunica)
+names(baseunica1)
+view(baseunica1)
+view(baseunica)
 
 # Parte 2 - Análise exploratória e gráfica dos dados
 
@@ -165,7 +175,7 @@ library(ggthemes)
 
 ### 2.1.1 Gráfico para variável discreta
 
-ggplot(baseperfilsus) +
+ggplot(baseunica) +
   geom_bar(aes(x=consorciosaude), colour = "white", fill = "dark blue", alpha=0.4) +
   ggtitle("Participação dos municípios RO em consórcios de saúde") +
   xlab("Se participa") +
@@ -176,10 +186,10 @@ ggplot(baseperfilsus) +
 
 ### 2.1.2 Gráfico para variável contínua
 
+names(baseunica)
+names(baseunica3)
 
-view(baseperfilsus)
-
-baseperfilsus2 <- baseperfilsus %>%
+baseunica3 <- baseunica %>%
   mutate(saude=as.numeric(gsub(",",".",saude)), assistencia=as.numeric(gsub(",",".",assistencia)),
          atencao=as.numeric(gsub(",",".",atencao)), vigilancia=as.numeric(gsub(",",".",vigilancia)),
          perc_assist=(assistencia/saude),
