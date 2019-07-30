@@ -1,0 +1,4 @@
+"0","terc_mun <- fread(""Base_MUNIC_2015.csv"", sep = "";"", nrows = 5500, header = T)"
+"2","Error in fread(""Base_MUNIC_2015.csv"", sep = "";"", nrows = 5500, header = T) : 
+  File 'Base_MUNIC_2015.csv' does not exist or is non-readable. getwd()=='C:/Users/hp/Downloads'
+"

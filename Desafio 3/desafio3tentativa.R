@@ -16,15 +16,11 @@ library(dplyr)
 library(data.table)
 library(readxl)   # To read .xls files with read_excel function
 library(gdata)    # To read .xls files with read.xls function
-install.packages("gdata")
-library(fread)
-install.packages("data.table")
+#install.packages("gdata")
+#install.packages("data.table")
 getwd()
 
 # Parte 1 - Combinando fontes de dados diferentes
-
-cod_ibge6 <- as.numeric(substr(cod_ibge7, 1, 6)) #dica
-
 ## 1.1 Carregando bases de dados
 ## Obs: origem: repositório do curso
 
@@ -33,38 +29,43 @@ cod_ibge6 <- as.numeric(substr(cod_ibge7, 1, 6)) #dica
 url_perfilmun <- "https://raw.githubusercontent.com/leobarone/FLS6397/master/data/Base_MUNIC_2015_xls.zip"
 download.file(url_perfilmun, "perfilmun.zip", quiet = F)
 unzip("perfilmun.zip")
-list.files()
-file.remove("perfilmun.zip")
 
-View(path_baseperfil)
+
+
+#alteração e seleção manual 
 
 #carregando dados base municipios
 
-Base_MUNIC_2015 <- read_delim("Base_MUNIC_2015.csv", ";", escape_double = FALSE, trim_ws = TRUE)
+Base_MUNIC_2015 <- read_delim("Base_MUNIC_2015.csv", 
+                              ";", escape_double = FALSE, locale = locale(encoding = "ISO-8859-1"), 
+                              trim_ws = TRUE)
 View(Base_MUNIC_2015)
+remove(Base_MUNIC_2015)
 
-path_baseperfil <- read_delim("Base_MUNIC_2015.csv", ";", escape_double = FALSE, trim_ws = TRUE)
-base_perfilmun <-fread(path_baseperfil) 
+path_baseperfil <- read_delim("Base_MUNIC_2015.csv", 
+                               ";", escape_double = FALSE, locale = locale(encoding = "ISO-8859-1"), 
+                               trim_ws = TRUE)
+
 
 names(path_baseperfil)
+names(base_perfilmun)
+remove(path_baseperfil)
+
 base_perfilmun <- path_baseperfil %>%
-  rename(cod_ibge7 = A1, cod_uf = Codigouf, municipio = Nome)  
+  rename(cod_ibge7 = A1, cod_uf = Codigouf, municipio = Nome)%>% 
+mutate (cod_ibge6 = as.numeric(substr(cod_ibge7, 1, 6))) #criando nova coluna com cod_ibge6
 
-base_perfilmun <- base_perfilmun %>%
-  mutate(cod_ibge6 = as.character(substr(cod_ibge7, 1, 6))) 
+view(base_perfilmun) 
 
-
-view(base_perfilmun)
-
+#escolhendo as informações - 6. Articulação Interinstitucional - Saúde
 base_perfilmun_sp <- base_perfilmun %>%
   filter(cod_uf == 35) %>%
   select(cod_ibge6, municipio, A155, A156, A157, A158)  %>%
   rename(consorciosaude = A155, intermunicipal = A156, estado = A157, uniao = A158)
 
-head(base_perfilmun_sp)
+names(base_perfilmun_sp)
 
 ### 1.1.2 Base Fiscal dos Municípios
-
 
 zipfile <- "finbra_MUNEST_DespesasporFuncao(AnexoI-E).zip"
 unzip(zipfile)
@@ -74,10 +75,18 @@ file.remove(zipfile)
 finbra <- read_delim("finbra.csv", ";", escape_double = FALSE, 
                      locale = locale(encoding = "ISO-8859-1"), 
                      trim_ws = TRUE)
+View(finbra)
 
 path_fiscal <- "finbra.csv"
 base_fiscalmun <- fread(path_fiscal, quote = "")
 names(base_fiscalmun)
+
+view(base_fiscalmun)
+view(base_fiscalmun_sp)
+remove(base_fiscalmun_sp)
+
+names(base_fiscalmun)
+view(base_fiscalmun)
 
 base_fiscalmun <- finbra %>%
   rename(cod_ibge7 = 'Cod.IBGE', municipio = 'Instituição', uf = 'UF', 
@@ -88,7 +97,8 @@ base_fiscalmun <- finbra %>%
   filter(coluna == 'Despesas Empenhadas', item == '10' | item == '10.301' | item == '10.302' | item == '10.304')
 
 base_fiscalmun <- base_fiscalmun %>%
-  spread(key = area, value = valor) 
+  spread(key = area, value = valor)
+
 
 library(zoo)  ## Função do(na.locf) -> para espalhar valores de uma variável por linhas vazias ## Fonte: https://stackoverflow.com/questions/27207162/fill-in-na-based-on-the-last-non-na-value-for-each-group-in-r
 base_fiscalmun <- base_fiscalmun %>%

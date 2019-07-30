@@ -1,0 +1,23 @@
+{
+    "collab_server" : "",
+    "contents" : "",
+    "created" : 1564422431283.000,
+    "dirty" : false,
+    "encoding" : "UTF-8",
+    "folds" : "",
+    "hash" : "122681218",
+    "id" : "600BB97B",
+    "lastKnownWriteTime" : 1564457387,
+    "last_content_update" : 1564457387,
+    "path" : "~/GitHub/Desafios/Desafio 3/desafio3tentativa.R",
+    "project_path" : "desafio3tentativa.R",
+    "properties" : {
+        "cursorPosition" : "66,0",
+        "scrollLine" : "54",
+        "tempName" : "Untitled1"
+    },
+    "relative_order" : 1,
+    "source_on_save" : false,
+    "source_window" : "",
+    "type" : "r_source"
+}

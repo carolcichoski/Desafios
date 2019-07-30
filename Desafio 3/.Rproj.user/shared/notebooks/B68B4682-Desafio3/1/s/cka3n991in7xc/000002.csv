@@ -1,0 +1,4 @@
+"0","receita_mun <- fread(""finbra.csv"", sep = "";"", nrows = 5500, header = T, skip = 3)"
+"2","Error in fread(""finbra.csv"", sep = "";"", nrows = 5500, header = T, skip = 3) : 
+  File 'finbra.csv' does not exist or is non-readable. getwd()=='C:/Users/hp/Downloads'
+"

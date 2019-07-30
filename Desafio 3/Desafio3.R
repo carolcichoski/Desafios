@@ -40,6 +40,7 @@ base_perfilmun <- Base_MUNIC_2015 %>%
 base_perfilmun <- base_perfilmun %>%
   mutate(cod_ibge6 = as.character(substr(cod_ibge7, 1, 6))) 
 
+
 #selecionando UF DE SP
 base_perfilmun_sp <- base_perfilmun %>%
   filter(cod_uf == 35) %>%
@@ -94,8 +95,10 @@ head(base_fiscalmun)
 
 ## 1.2 Juntar bases de dados
 
-baseunica <- inner_join(base_perfilmun_sp, base_fiscalmunsp, by = "cod_ibge6")  %>%
-  inner_join(base_datasusmun, by = "cod_ibge6")
+baseunica <- inner_join(base_perfilmun_sp, base_fiscalmunsp, by = "cod_ibge7")  %>%
+  inner_join(base_datasusmun, by = "cod_ibge7")
+rlang::last_error()
+
 
 baseunica <- baseunica %>%
   mutate(menor1ano = gsub("-", "0", menor1ano)) %>%
